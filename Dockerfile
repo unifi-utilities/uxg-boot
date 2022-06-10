@@ -1,4 +1,5 @@
-FROM uxg-setup:0.1.19
+ARG VERSION
+FROM uxg-setup:${VERSION}
 
 # TODO: Why are these needed?
 ENTRYPOINT ["docker-entrypoint.sh"]

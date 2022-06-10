@@ -1,3 +1,4 @@
+IMAGE = joshuaspence/uxg-setup
 SHELL = /bin/bash
 
 default: image build push
@@ -17,16 +18,20 @@ image: uxg-setup.json uxg-setup.tar
 		--change 'ENTRYPOINT $(ENTRYPOINT)' \
 		--change 'CMD $(CMD)' \
 		--change 'LABEL $(LABEL)' \
-		uxg-setup.tar "joshuaspence/uxg-setup:$(VERSION)"
-	docker tag "joshuaspence/uxg-setup:$(VERSION)" joshuaspence/uxg-setup:latest
+		uxg-setup.tar "$(IMAGE):$(VERSION)"
 
 .PHONY: build
-build:
-	docker build --tag joshuaspence/uxg-setup:latest .
+build: uxg-setup.json
+	$(eval VERSION = $(shell jq --raw-output '.Labels.version' uxg-setup.json))
+	docker build --build-arg VERSION=$(VERSION) --tag "$(IMAGE):$(VERSION)-1" .
 
 .PHONY: push
 push:
-	docker push --all-tags joshuaspence/uxg-setup
+	docker push --all-tags "$(IMAGE)"
+
+.PHONY: images
+images:
+	docker image ls "$(IMAGE)"
 
 uxg-setup.tar:
 	ssh -o LogLevel=quiet $(DEVICE) $$'podman export --output /proc/self/fd/1 uxg-setup' > $@
