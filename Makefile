@@ -10,11 +10,11 @@ image: uxg-setup.json uxg-setup.tar
 	$(eval VERSION = $(shell jq --raw-output '.Labels.version' uxg-setup.json))
 
 	docker import \
-		--change "EXPOSE $(EXPOSE)" \
-		--change "ENV $(ENV)" \
-		--change "ENTRYPOINT $(ENTRYPOINT)" \
-		--change "CMD $(CMD)" \
-		--change "LABEL $(LABEL)" \
+		--change 'EXPOSE $(EXPOSE)' \
+		--change 'ENV $(ENV)' \
+		--change 'ENTRYPOINT $(ENTRYPOINT)' \
+		--change 'CMD $(CMD)' \
+		--change 'LABEL $(LABEL)' \
 		uxg-setup.tar "joshuaspence/uxg-setup:$(VERSION)"
 	docker tag "joshuaspence/uxg-setup:$(VERSION)" joshuaspence/uxg-setup:latest
 
