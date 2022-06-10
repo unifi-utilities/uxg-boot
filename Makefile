@@ -1,5 +1,7 @@
 SHELL = /bin/bash
 
+default: image build push
+
 .PHONY: image
 image: uxg-setup.json uxg-setup.tar
 	$(eval CMD = $(shell jq --raw-output '.Cmd | tojson' uxg-setup.json))
