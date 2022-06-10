@@ -24,7 +24,7 @@ build:
 
 .PHONY: push
 push:
-	docker push joshuaspence/uxg-setup:latest
+	docker push --all-tags joshuaspence/uxg-setup
 
 uxg-setup.tar:
 	ssh -o LogLevel=quiet $(DEVICE) $$'podman export --output /proc/self/fd/1 uxg-setup' > $@
