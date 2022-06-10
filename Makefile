@@ -22,16 +22,8 @@ push:
 images:
 	docker image ls "$(IMAGE)"
 
-cache/conmon:
+cache/uxg-setup.tar:
 	mkdir --parents $(@D)
-	curl --output $@ https://github.com/boostchicken-dev/udm-utilities/raw/master/podman-update/bin/conmon-2.0.29
-	chmod +x $@
-
-cache/podman:
-	mkdir --parents $(@D)
-	curl --output $@ https://github.com/boostchicken-dev/udm-utilities/raw/master/podman-update/bin/podman-3.3.0
-	chmod +x $@
-
-cache/uxg-setup.tar: cache/conmon cache/podman
-	scp -o LogLevel=quiet $^ $(call check_defined,DEVICE):/tmp
+	ssh -o LogLevel=quiet $(call check_defined,DEVICE) $$'test -f /tmp/conmon || { curl --fail --location --no-progress-meter --output /tmp/conmon https://github.com/boostchicken-dev/udm-utilities/raw/master/podman-update/bin/conmon-2.0.29 && chmod +x /tmp/conmon; }'
+	ssh -o LogLevel=quiet $(call check_defined,DEVICE) $$'test -f /tmp/podman || { curl --fail --location --no-progress-meter --output /tmp/podman https://github.com/boostchicken-dev/udm-utilities/raw/master/podman-update/bin/podman-3.3.0 && chmod +x /tmp/podman; }'
 	ssh -o LogLevel=quiet $(call check_defined,DEVICE) /tmp/podman --conmon /tmp/conmon save localhost/uxg-setup > $@
