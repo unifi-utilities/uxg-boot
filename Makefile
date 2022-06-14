@@ -1,25 +1,24 @@
-IMAGE = joshuaspence/uxg-setup
+ARCHIVE = cache/uxg-setup.tar
+SOURCE_IMAGE = localhost/uxg-setup
+TARGET_IMAGE = joshuaspence/uxg-setup
+
 SHELL = /bin/bash
-
-check_defined = $(if $(value $1),$(value $1),$(error Undefined $1$(if $(value @), required by target `$@')))
-
-.PHONY: image
-image:
-	ssh -o LogLevel=quiet $(call check_defined,DEVICE) $$'test -f /tmp/conmon || { curl --fail --location --no-progress-meter --output /tmp/conmon https://github.com/boostchicken-dev/udm-utilities/raw/master/podman-update/bin/conmon-2.0.29 && chmod +x /tmp/conmon; }'
-	ssh -o LogLevel=quiet $(call check_defined,DEVICE) $$'test -f /tmp/podman || { curl --fail --location --no-progress-meter --output /tmp/podman https://github.com/boostchicken-dev/udm-utilities/raw/master/podman-update/bin/podman-3.3.0 && chmod +x /tmp/podman; }'
-	$(eval VERSION = $(shell docker image inspect --format '{{ .Config.Labels.version }}' localhost/uxg-setup))
-	mkdir --parents cache
-	ssh -o LogLevel=quiet $(call check_defined,DEVICE) /tmp/podman --conmon /tmp/conmon save localhost/uxg-setup | tee cache/$(VERSION).tar | docker load
-	docker tag localhost/uxg-setup "$(IMAGE):$(VERSION)-original"
 
 .PHONY: build
 build: image
-	docker build --build-arg VERSION=$(VERSION) --tag "$(IMAGE):$(VERSION)" .
+	docker load --input $(ARCHIVE)
+	$(eval VERSION = $(shell docker image inspect --format '{{ .Config.Labels.version }}' $(SOURCE_IMAGE)))
+	docker tag $(SOURCE_IMAGE) $(TARGET_IMAGE):$(VERSION)-original
+	docker build --build-arg VERSION=$(VERSION) --tag $(TARGET_IMAGE):$(VERSION) .
+
+.PHONY: image
+image: cache/uxg-setup.tar
+	mkdir --parents cache
+	$(if $(value DEVICE),,$(error DEVICE is undefined))
+	ssh -o LogLevel=quiet $(DEVICE) $$'test -f /tmp/conmon || { curl --fail --location --no-progress-meter --output /tmp/conmon https://github.com/boostchicken-dev/udm-utilities/raw/master/podman-update/bin/conmon-2.0.29 && chmod +x /tmp/conmon; }'
+	ssh -o LogLevel=quiet $(DEVICE) $$'test -f /tmp/podman || { curl --fail --location --no-progress-meter --output /tmp/podman https://github.com/boostchicken-dev/udm-utilities/raw/master/podman-update/bin/podman-3.3.0 && chmod +x /tmp/podman; }'
+	ssh -o LogLevel=quiet $(DEVICE) /tmp/podman --conmon /tmp/conmon save $(SOURCE_IMAGE) | sponge $(ARCHIVE)
 
 .PHONY: push
 push:
-	docker push --all-tags "$(IMAGE)"
-
-.PHONY: images
-images:
-	docker image ls "$(IMAGE)"
+	docker image push --all-tags $(TARGET_IMAGE)
