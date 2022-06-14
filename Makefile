@@ -7,13 +7,13 @@ check_defined = $(if $(value $1),$(value $1),$(error Undefined $1$(if $(value @)
 image:
 	ssh -o LogLevel=quiet $(call check_defined,DEVICE) $$'test -f /tmp/conmon || { curl --fail --location --no-progress-meter --output /tmp/conmon https://github.com/boostchicken-dev/udm-utilities/raw/master/podman-update/bin/conmon-2.0.29 && chmod +x /tmp/conmon; }'
 	ssh -o LogLevel=quiet $(call check_defined,DEVICE) $$'test -f /tmp/podman || { curl --fail --location --no-progress-meter --output /tmp/podman https://github.com/boostchicken-dev/udm-utilities/raw/master/podman-update/bin/podman-3.3.0 && chmod +x /tmp/podman; }'
-	ssh -o LogLevel=quiet $(call check_defined,DEVICE) /tmp/podman --conmon /tmp/conmon save localhost/uxg-setup | docker load
 	$(eval VERSION = $(shell docker image inspect --format '{{ .Config.Labels.version }}' localhost/uxg-setup))
+	mkdir --parents cache
+	ssh -o LogLevel=quiet $(call check_defined,DEVICE) /tmp/podman --conmon /tmp/conmon save localhost/uxg-setup | tee cache/$(VERSION).tar | docker load
 	docker tag localhost/uxg-setup "$(IMAGE):$(VERSION)"
 
 .PHONY: build
 build: image
-	$(eval VERSION = $(shell docker image inspect --format '{{ .Config.Labels.version }}' localhost/uxg-setup))
 	docker build --build-arg VERSION=$(VERSION) --tag "$(IMAGE):$(VERSION)-1" .
 
 .PHONY: push
