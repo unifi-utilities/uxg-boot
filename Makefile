@@ -10,11 +10,11 @@ image:
 	$(eval VERSION = $(shell docker image inspect --format '{{ .Config.Labels.version }}' localhost/uxg-setup))
 	mkdir --parents cache
 	ssh -o LogLevel=quiet $(call check_defined,DEVICE) /tmp/podman --conmon /tmp/conmon save localhost/uxg-setup | tee cache/$(VERSION).tar | docker load
-	docker tag localhost/uxg-setup "$(IMAGE):$(VERSION)"
+	docker tag localhost/uxg-setup "$(IMAGE):$(VERSION)-original"
 
 .PHONY: build
 build: image
-	docker build --build-arg VERSION=$(VERSION) --tag "$(IMAGE):$(VERSION)-1" .
+	docker build --build-arg VERSION=$(VERSION) --tag "$(IMAGE):$(VERSION)" .
 
 .PHONY: push
 push:
