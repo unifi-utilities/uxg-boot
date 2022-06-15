@@ -1,24 +1,37 @@
-ARCHIVE = cache/uxg-setup.tar
-SOURCE_IMAGE = localhost/uxg-setup
-TARGET_IMAGE = joshuaspence/uxg-setup
+SOURCE_IMAGE := localhost/uxg-setup
+TARGET_IMAGE := joshuaspence/uxg-setup
 
-SHELL = /bin/bash
+DOCKER    := docker
+SCP       := scp -o LogLevel=quiet
+SHELL     := /bin/bash
+SHELLOPTS := pipefail
+SSH       := ssh -o LogLevel=quiet
+
+export SHELLOPTS
+
+.DELETE_ON_ERROR:
 
 .PHONY: build
-build: image
-	docker load --input $(ARCHIVE)
-	$(eval VERSION = $(shell docker image inspect --format '{{ .Config.Labels.version }}' $(SOURCE_IMAGE)))
-	docker tag $(SOURCE_IMAGE) $(TARGET_IMAGE):$(VERSION)-original
-	docker build --build-arg VERSION=$(VERSION) --tag $(TARGET_IMAGE):$(VERSION) .
-
-.PHONY: image
-image: cache/uxg-setup.tar
-	mkdir --parents cache
-	$(if $(value DEVICE),,$(error DEVICE is undefined))
-	ssh -o LogLevel=quiet $(DEVICE) $$'test -f /tmp/conmon || { curl --fail --location --no-progress-meter --output /tmp/conmon https://github.com/boostchicken-dev/udm-utilities/raw/master/podman-update/bin/conmon-2.0.29 && chmod +x /tmp/conmon; }'
-	ssh -o LogLevel=quiet $(DEVICE) $$'test -f /tmp/podman || { curl --fail --location --no-progress-meter --output /tmp/podman https://github.com/boostchicken-dev/udm-utilities/raw/master/podman-update/bin/podman-3.3.0 && chmod +x /tmp/podman; }'
-	ssh -o LogLevel=quiet $(DEVICE) /tmp/podman --conmon /tmp/conmon save $(SOURCE_IMAGE) | sponge $(ARCHIVE)
+build: cache/uxg-setup.tar
+	$(DOCKER) load --input cache/uxg-setup.tar
+	$(eval VERSION = $(shell $(DOCKER) image inspect --format '{{ .Config.Labels.version }}' $(SOURCE_IMAGE)))
+	$(DOCKER) tag $(SOURCE_IMAGE) $(TARGET_IMAGE):$(VERSION)-original
+	$(DOCKER) build --build-arg VERSION=$(VERSION) --tag $(TARGET_IMAGE):$(VERSION) .
 
 .PHONY: push
 push:
-	docker image push --all-tags $(TARGET_IMAGE)
+	$(DOCKER) image push --all-tags $(TARGET_IMAGE)
+
+cache/uxg-setup.tar: cache/podman cache/conmon
+	@mkdir --parents $(@D)
+
+	$(SCP) $^ $(DEVICE):/tmp
+	$(SSH) $(DEVICE) /tmp/podman --conmon /tmp/conmon save $(SOURCE_IMAGE) | sponge $@
+
+cache/podman: podman/Dockerfile
+	$(DOCKER) build --no-cache --file $< --tag podman-builder $(<D)
+	$(DOCKER) run --rm --volume $$(pwd)/cache:/build --entrypoint cp podman-builder /workspace/bin/podman.cross.linux.arm64 /build/podman
+
+cache/conmon: conmon/Dockerfile
+	$(DOCKER) build --no-cache --file $< --tag conmon-builder $(<D)
+	$(DOCKER) run --rm --volume $$(pwd)/cache:/build --entrypoint cp conmon-builder /workspace/bin/conmon /build/conmon
