@@ -30,7 +30,7 @@ cache/uxg-setup.tar: cache/podman cache/conmon
 
 cache/podman: podman/Dockerfile
 	$(DOCKER) build --no-cache --file $< --tag podman-builder $(<D)
-	$(DOCKER) run --rm --volume $$(pwd)/cache:/build --entrypoint cp podman-builder /workspace/bin/podman.cross.linux.arm64 /build/podman
+	$(DOCKER) run --rm --volume $$(pwd)/cache:/build --entrypoint cp podman-builder /workspace/bin/podman /build/podman
 
 cache/conmon: conmon/Dockerfile
 	$(DOCKER) build --no-cache --file $< --tag conmon-builder $(<D)
