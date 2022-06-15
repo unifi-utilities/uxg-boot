@@ -1,11 +1,13 @@
 SOURCE_IMAGE := localhost/uxg-setup
 TARGET_IMAGE := joshuaspence/uxg-setup
 
+CURL      := curl --location --show-error --silent
 DOCKER    := docker
 SCP       := scp -o LogLevel=quiet
 SHELL     := /bin/bash
 SHELLOPTS := pipefail
 SSH       := ssh -o LogLevel=quiet
+TAR       := tar
 
 export SHELLOPTS
 
@@ -28,10 +30,9 @@ cache/uxg-setup.tar: cache/podman cache/conmon
 	$(SCP) $^ $(DEVICE):/tmp
 	$(SSH) $(DEVICE) /tmp/podman --conmon /tmp/conmon save $(SOURCE_IMAGE) | sponge $@
 
-cache/podman: podman/Dockerfile
-	$(DOCKER) build --no-cache --file $< --tag podman-builder $(<D)
-	$(DOCKER) run --rm --volume $$(pwd)/cache:/build --entrypoint cp podman-builder /workspace/bin/podman /build/podman
+cache/podman.tar.gz:
+	$(CURL) --output $@ https://github.com/mgoltzsche/podman-static/releases/download/v3.4.2/podman-linux-arm64.tar.gz
 
-cache/conmon: conmon/Dockerfile
-	$(DOCKER) build --no-cache --file $< --tag conmon-builder $(<D)
-	$(DOCKER) run --rm --volume $$(pwd)/cache:/build --entrypoint cp conmon-builder /workspace/bin/conmon /build/conmon
+cache/conmon cache/podman: cache/podman.tar.gz
+	$(TAR) --extract --file $< --to-stdout --no-anchored $(@F) > $@
+	chmod +x $@
