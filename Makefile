@@ -9,7 +9,7 @@ SCP    := scp -o LogLevel=quiet
 SSH    := ssh -o LogLevel=quiet
 TAR    := tar
 
-export SHELLOPTS := pipefail
+export SHELLOPTS := errexit:nounset:pipefail
 
 .DELETE_ON_ERROR:
 
