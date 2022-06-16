@@ -1,8 +1,10 @@
 SOURCE_IMAGE := localhost/uxg-setup
 TARGET_IMAGE := joshuaspence/uxg-setup
 
-CURL      := curl --location --show-error --silent
+CHMOD     := chmod
+CURL      := curl --fail --location --no-progress-meter
 DOCKER    := docker
+MKDIR     := mkdir --parents
 SCP       := scp -o LogLevel=quiet
 SHELL     := /bin/bash
 SHELLOPTS := pipefail
@@ -25,15 +27,16 @@ push:
 	$(DOCKER) image push --all-tags $(TARGET_IMAGE)
 
 cache/uxg-setup.tar: cache/podman cache/conmon
-	@mkdir --parents $(@D)
-
+	@$(MKDIR) $(@D)
 	$(SCP) $^ $(DEVICE):/tmp
 	$(SSH) $(DEVICE) /tmp/podman --conmon /tmp/conmon save $(SOURCE_IMAGE) | sponge $@
 
 # TODO: Update to Podman 4
 cache/podman.tar.gz:
+	@$(MKDIR) $(@D)
 	$(CURL) --output $@ https://github.com/mgoltzsche/podman-static/releases/download/v3.4.2/podman-linux-arm64.tar.gz
 
 cache/conmon cache/podman: cache/podman.tar.gz
+	@$(MKDIR) $(@D)
 	$(TAR) --extract --file $< --to-stdout --no-anchored $(@F) > $@
-	chmod +x $@
+	$(CHMOD) +x $@
