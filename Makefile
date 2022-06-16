@@ -25,10 +25,13 @@ build: cache/uxg-setup.tar
 push:
 	$(DOCKER) image push --all-tags $(TARGET_IMAGE)
 
-cache/conmon cache/podman: cache/podman.tar.gz
+cache/conmon: cache/podman.tar.gz
 	$(MKDIR) $(@D)
-	$(TAR) --extract --file $< --to-stdout --no-anchored $(@F) > $@
-	$(CHMOD) +x $@
+	$(TAR) --extract --file $< --directory $(@D) --strip-components=5 podman-linux-arm64/usr/local/lib/podman/conmon
+
+cache/podman: cache/podman.tar.gz
+	$(MKDIR) $(@D)
+	$(TAR) --extract --file $< --directory $(@D) --strip-components=4 podman-linux-arm64/usr/local/bin/podman
 
 # TODO: Update to Podman 4.
 cache/podman.tar.gz:
