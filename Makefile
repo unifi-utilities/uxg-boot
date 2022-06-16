@@ -8,11 +8,8 @@ JQ     := jq --raw-output
 MKDIR  := @mkdir --parents
 SCP    := scp -o LogLevel=quiet
 SKOPEO := skopeo
-SPONGE := sponge
 SSH    := ssh -o LogLevel=quiet
 TAR    := tar
-
-export SHELLOPTS := errexit:nounset:pipefail
 
 .DEFAULT: build
 .DELETE_ON_ERROR:
@@ -39,7 +36,6 @@ cache/podman.tar.gz:
 	$(CURL) --output $@ https://github.com/mgoltzsche/podman-static/releases/download/v3.4.2/podman-linux-arm64.tar.gz
 
 # TODO: Fix errors/warnings.
-# TODO: Use `>` instead of `|`.
 cache/uxg-setup.tar: cache/conmon cache/podman
 	$(SCP) $^ $(DEVICE):/tmp
-	$(SSH) $(DEVICE) /tmp/podman --conmon /tmp/conmon save $(SOURCE_IMAGE) | $(SPONGE) $@
+	$(SSH) $(DEVICE) /tmp/podman --conmon /tmp/conmon save $(SOURCE_IMAGE) > $@
