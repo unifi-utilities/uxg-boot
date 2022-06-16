@@ -1,17 +1,15 @@
 SOURCE_IMAGE := localhost/uxg-setup
 TARGET_IMAGE := joshuaspence/uxg-setup
 
-CHMOD     := chmod
-CURL      := curl --fail --location --no-progress-meter
-DOCKER    := docker
-MKDIR     := mkdir --parents
-SCP       := scp -o LogLevel=quiet
-SHELL     := /bin/bash
-SHELLOPTS := pipefail
-SSH       := ssh -o LogLevel=quiet
-TAR       := tar
+CHMOD  := chmod
+CURL   := curl --fail --location --no-progress-meter
+DOCKER := docker
+MKDIR  := mkdir --parents
+SCP    := scp -o LogLevel=quiet
+SSH    := ssh -o LogLevel=quiet
+TAR    := tar
 
-export SHELLOPTS
+export SHELLOPTS := pipefail
 
 .DELETE_ON_ERROR:
 
