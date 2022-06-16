@@ -4,8 +4,10 @@ TARGET_IMAGE := joshuaspence/uxg-setup
 CHMOD  := chmod
 CURL   := curl --fail --location --no-progress-meter
 DOCKER := docker
+JQ     := jq --raw-output
 MKDIR  := @mkdir --parents
 SCP    := scp -o LogLevel=quiet
+SKOPEO := skopeo
 SPONGE := sponge
 SSH    := ssh -o LogLevel=quiet
 TAR    := tar
@@ -18,8 +20,8 @@ export SHELLOPTS := errexit:nounset:pipefail
 
 build: cache/uxg-setup.tar
 	$(DOCKER) image load --input $<
-
-	$(eval VERSION = $(shell $(DOCKER) image inspect --format '{{ .Config.Labels.version }}' $(SOURCE_IMAGE)))
+	$(eval SOURCE_IMAGE := $(shell $(SKOPEO) inspect --raw docker-archive:$< | $(JQ) .config.digest))
+	$(eval VERSION = $(shell $(SKOPEO) inspect --config --raw docker-archive:$< | $(JQ) .config.Labels.version))
 	$(DOCKER) image tag $(SOURCE_IMAGE) $(TARGET_IMAGE):$(VERSION)-original
 	$(DOCKER) image build --build-arg VERSION=$(VERSION) --tag $(TARGET_IMAGE):$(VERSION) .
 
