@@ -33,10 +33,9 @@ cache/podman: cache/podman.tar.gz
 	$(MKDIR) $(@D)
 	$(TAR) --extract --file $< --directory $(@D) --strip-components=4 podman-linux-arm64/usr/local/bin/podman
 
-# TODO: Update to Podman 4.
 cache/podman.tar.gz:
 	$(MKDIR) $(@D)
-	$(CURL) --output $@ https://github.com/mgoltzsche/podman-static/releases/download/v3.4.2/podman-linux-arm64.tar.gz
+	$(CURL) --output $@ https://github.com/mgoltzsche/podman-static/releases/download/v4.1.0/podman-linux-arm64.tar.gz
 
 # TODO: Fix errors/warnings.
 cache/uxg-setup.tar: cache/conmon cache/podman
