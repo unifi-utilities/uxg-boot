@@ -30,6 +30,7 @@ cache/uxg-setup.tar: cache/podman cache/conmon
 	$(SCP) $^ $(DEVICE):/tmp
 	$(SSH) $(DEVICE) /tmp/podman --conmon /tmp/conmon save $(SOURCE_IMAGE) | sponge $@
 
+# TODO: Update to Podman 4
 cache/podman.tar.gz:
 	$(CURL) --output $@ https://github.com/mgoltzsche/podman-static/releases/download/v3.4.2/podman-linux-arm64.tar.gz
 
