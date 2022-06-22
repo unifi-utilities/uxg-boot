@@ -16,8 +16,13 @@ jobs:
       - uses: 'actions/checkout@v3'
         with:
           submodules: true
+
       - uses: 'actions/cache@v3'
         with:
           path: 'cache/uxgpro-${{ matrix.version }}'
           key: 'uxgpro-${{ matrix.version }}'
+      - uses: 'actions/cache@v3'
+        with:
+          path: 'firmware-mod-kit'
+          key: '${{ runner.os }}-firmware-mod-kit'
       - run: 'make FIRMWARE_VERSION=${{ matrix.version }}'
