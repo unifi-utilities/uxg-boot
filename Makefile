@@ -20,6 +20,11 @@ build: cache/uxgpro-$(FIRMWARE_VERSION)/image.tar cache/uxgpro-$(FIRMWARE_VERSIO
 	$(PODMAN) image tag $(SOURCE_DIGEST) $(TARGET_IMAGE):$(SOURCE_VERSION)-original
 	$(PODMAN) image build --build-arg SOURCE_VERSION=$(SOURCE_VERSION) --tag $(TARGET_IMAGE):$(SOURCE_VERSION) .
 
+push:
+	$(eval include cache/uxgpro-$(FIRMWARE_VERSION)/image.mk)
+	$(PODMAN) image push $(TARGET_IMAGE):$(SOURCE_VERSION)-original docker.io/$(TARGET_IMAGE):$(SOURCE_VERSION)-original
+	$(PODMAN) image push $(TARGET_IMAGE):$(SOURCE_VERSION) docker.io/$(TARGET_IMAGE):$(SOURCE_VERSION)
+
 cache/uxgpro-%/firmware.bin:
 	$(MKDIR) $(@D)
 	$(CURL) --output $@ https://fw-download.ubnt.com/data/unifi-firmware/$(FIRMWARE_$*_SLUG)-UXGPRO-$*-$(FIRMWARE_$*_HASH).bin
