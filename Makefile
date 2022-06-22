@@ -14,6 +14,7 @@ FIRMWARE_1.12.19_HASH := 45c1b1b0b5f84bc191310823d7d99baf
 .PHONY: build
 .SECONDARY:
 
+# TODO: Allow setting `FIRMWARE_VERSION=latest`.
 build: cache/uxgpro-$(FIRMWARE_VERSION)/image.tar cache/uxgpro-$(FIRMWARE_VERSION)/image.mk
 	$(eval include cache/uxgpro-$(FIRMWARE_VERSION)/image.mk)
 	$(PODMAN) image load --input cache/uxgpro-$(FIRMWARE_VERSION)/image.tar
