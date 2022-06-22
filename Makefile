@@ -1,43 +1,35 @@
+CHOWN  := sudo chown --recursive
+CURL   := curl --fail --location --no-progress-meter
+PODMAN := podman
+MKDIR  := @mkdir --parents
+
 SOURCE_IMAGE := localhost/uxg-setup
 TARGET_IMAGE := joshuaspence/uxg-setup
 
-CHMOD  := chmod
-CURL   := curl --fail --location --no-progress-meter
-DOCKER := docker
-JQ     := jq --raw-output
-MKDIR  := @mkdir --parents
-SCP    := scp -o LogLevel=quiet
-SKOPEO := skopeo
-SSH    := ssh -o LogLevel=quiet
-TAR    := tar
+FIRMWARE_1.11.0_SLUG  := 5d22
+FIRMWARE_1.11.0_HASH  := a66138b5dd2c4060a99b25b90ceee8dc
+FIRMWARE_1.12.19_SLUG := 2ee2
+FIRMWARE_1.12.19_HASH := 45c1b1b0b5f84bc191310823d7d99baf
 
-.DEFAULT: build
-.DELETE_ON_ERROR:
-.PHONY: build push
+.PHONY: build
+.SECONDARY:
 
-build: cache/uxg-setup.tar
-	$(DOCKER) image load --input $<
-	$(eval SOURCE_IMAGE := $(shell $(SKOPEO) inspect --raw docker-archive:$< | $(JQ) .config.digest))
-	$(eval VERSION = $(shell $(SKOPEO) inspect --config --raw docker-archive:$< | $(JQ) .config.Labels.version))
-	$(DOCKER) image tag $(SOURCE_IMAGE) $(TARGET_IMAGE):$(VERSION)-original
-	$(DOCKER) image build --build-arg VERSION=$(VERSION) --tag $(TARGET_IMAGE):$(VERSION) .
+build: cache/uxgpro-$(FIRMWARE_VERSION)/image.tar cache/uxgpro-$(FIRMWARE_VERSION)/image.mk
+	$(eval include cache/uxgpro-$(FIRMWARE_VERSION)/image.mk)
+	$(PODMAN) image load --input cache/uxgpro-$(FIRMWARE_VERSION)/image.tar
+	$(PODMAN) image tag $(SOURCE_DIGEST) $(TARGET_IMAGE):$(SOURCE_VERSION)-original
+	$(PODMAN) image build --build-arg SOURCE_VERSION=$(SOURCE_VERSION) --tag $(TARGET_IMAGE):$(SOURCE_VERSION) .
 
-push:
-	$(DOCKER) image push --all-tags $(TARGET_IMAGE)
-
-cache/conmon: cache/podman.tar.gz
+cache/uxgpro-%/firmware.bin:
 	$(MKDIR) $(@D)
-	$(TAR) --extract --file $< --directory $(@D) --strip-components=5 podman-linux-arm64/usr/local/lib/podman/conmon
+	$(CURL) --output $@ https://fw-download.ubnt.com/data/unifi-firmware/$(FIRMWARE_$*_SLUG)-UXGPRO-$*-$(FIRMWARE_$*_HASH).bin
 
-cache/podman: cache/podman.tar.gz
-	$(MKDIR) $(@D)
-	$(TAR) --extract --file $< --directory $(@D) --strip-components=4 podman-linux-arm64/usr/local/bin/podman
+cache/uxgpro-%/fs: cache/uxgpro-%/firmware.bin
+	firmware-mod-kit/extract-firmware.sh $< $@
+	$(CHOWN) $(USER):$(USER) $@
 
-cache/podman.tar.gz:
-	$(MKDIR) $(@D)
-	$(CURL) --output $@ https://github.com/mgoltzsche/podman-static/releases/download/v4.1.0/podman-linux-arm64.tar.gz
+cache/uxgpro-%/image.mk: cache/uxgpro-%/fs
+	$(PODMAN) --root $</rootfs/var/lib/containers/storage image inspect --format 'SOURCE_DIGEST := {{ .ID }}{{ "\n" }}SOURCE_VERSION := {{ .Config.Labels.version }}' $(SOURCE_IMAGE) > $@
 
-# TODO: Fix errors/warnings.
-cache/uxg-setup.tar: cache/conmon cache/podman
-	$(SCP) $^ $(DEVICE):/tmp
-	$(SSH) $(DEVICE) /tmp/podman --conmon /tmp/conmon save $(SOURCE_IMAGE) > $@
+cache/uxgpro-%/image.tar: cache/uxgpro-%/fs
+	$(PODMAN) --root $</rootfs/var/lib/containers/storage image save --output $@ $(SOURCE_IMAGE)

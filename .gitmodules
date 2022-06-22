@@ -1,0 +1,4 @@
+[submodule "firmware-mod-kit"]
+path = firmware-mod-kit
+url = https://github.com/rampageX/firmware-mod-kit.git
+ignore = dirty
