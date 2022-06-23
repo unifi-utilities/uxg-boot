@@ -18,7 +18,6 @@ jobs:
         with:
           path: 'cache/uxgpro-*'
           key: 'uxgpro-2'
-      - uses: 'satackey/action-docker-layer-caching@v0.0.11'
       - uses: 'actions/cache@v3'
         with:
           path: 'firmware-mod-kit'
