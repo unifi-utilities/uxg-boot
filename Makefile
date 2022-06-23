@@ -7,15 +7,22 @@ MKDIR  := @mkdir --parents
 SOURCE_IMAGE := uxg-setup
 TARGET_IMAGE := docker.io/joshuaspence/uxg-setup
 
+MAKEFLAGS += --no-print-directory
+MAKEFLAGS += --warn-undefined-variables
+
 .DELETE_ON_ERROR:
 .PHONY: build push
 .SECONDARY:
 
-# TODO: Allow setting `FIRMWARE_VERSION=latest`.
+ifdef FIRMWARE_VERSION
 build: cache/uxgpro-$(FIRMWARE_VERSION)/image.tar cache/uxgpro-$(FIRMWARE_VERSION)/image.mk
 	$(eval include cache/uxgpro-$(FIRMWARE_VERSION)/image.mk)
 	$(PODMAN) image load --input cache/uxgpro-$(FIRMWARE_VERSION)/image.tar
 	$(PODMAN) image build --build-arg BUILD_FROM=$(SOURCE_DIGEST) --tag $(TARGET_IMAGE):$(SOURCE_VERSION) .
+else
+build:
+	$(MAKE) FIRMWARE_VERSION=$$($(CURL) --header 'X-Requested-With: XMLHttpRequest' https://www.ui.com/download/?product=uxg-pro | $(JQ) '.downloads | map(select(.category__slug == "firmware")) | max_by(.version) | .version')
+endif
 
 # TODO: Don't push older images.
 push:
