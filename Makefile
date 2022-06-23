@@ -4,7 +4,7 @@ PODMAN := podman
 MKDIR  := @mkdir --parents
 
 SOURCE_IMAGE := localhost/uxg-setup
-TARGET_IMAGE := joshuaspence/uxg-setup
+TARGET_IMAGE := docker.io/joshuaspence/uxg-setup
 
 FIRMWARE_1.11.0_SLUG  := 5d22
 FIRMWARE_1.11.0_HASH  := a66138b5dd2c4060a99b25b90ceee8dc
@@ -24,7 +24,7 @@ build: cache/uxgpro-$(FIRMWARE_VERSION)/image.tar cache/uxgpro-$(FIRMWARE_VERSIO
 # TODO: Don't push older images.
 push:
 	$(eval include cache/uxgpro-$(FIRMWARE_VERSION)/image.mk)
-	$(PODMAN) image push $(TARGET_IMAGE):$(SOURCE_VERSION) docker.io/$(TARGET_IMAGE):$(SOURCE_VERSION)
+	$(PODMAN) image push $(TARGET_IMAGE):$(SOURCE_VERSION)
 
 cache/uxgpro-%/firmware.bin:
 	$(MKDIR) $(@D)
