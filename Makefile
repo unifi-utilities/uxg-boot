@@ -1,3 +1,4 @@
+AWK    := awk
 CHOWN  := sudo chown --recursive $(USER):$(USER)
 CURL   := curl --fail --location --no-progress-meter
 JQ     := jq --raw-output --exit-status
@@ -17,11 +18,10 @@ MAKEFLAGS += --warn-undefined-variables
 ifdef FIRMWARE_VERSION
 build: cache/uxgpro-$(FIRMWARE_VERSION)/image.tar
 	$(PODMAN) image load --input cache/uxgpro-$(FIRMWARE_VERSION)/image.tar
-	$(eval SOURCE_VERSION := $(shell $(PODMAN) image inspect --format '{{ .Config.Labels.version }}' $(SOURCE_IMAGE)))
-	$(PODMAN) image build --build-arg BUILD_FROM=$(SOURCE_IMAGE) --tag $(TARGET_IMAGE):$(SOURCE_VERSION) .
+	$(PODMAN) image build --build-arg BUILD_FROM=$(SOURCE_IMAGE) --label source_firmware=$(FIRMWARE_VERSION) --tag $(TARGET_IMAGE):$$($(PODMAN) image inspect --format '{{ .Config.Labels.version }}' $(SOURCE_IMAGE)) .
 
 ifdef DOCKER_PUSH
-	$(PODMAN) image push $(TARGET_IMAGE):$(SOURCE_VERSION)
+	$(PODMAN) image push $(TARGET_IMAGE):$$($(PODMAN) image inspect --format '{{ .Config.Labels.version }}' $(SOURCE_IMAGE))
 endif
 else
 build:
