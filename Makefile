@@ -16,20 +16,11 @@ MAKEFLAGS += --warn-undefined-variables
 .SECONDARY:
 
 ifdef FIRMWARE_VERSION
-build: cache/uxgpro-$(FIRMWARE_VERSION)/image.tar
-	$(PODMAN) image load --input cache/uxgpro-$(FIRMWARE_VERSION)/image.tar
-	$(PODMAN) image build \
-		--build-arg BUILD_FROM=$(SOURCE_IMAGE) \
-		--label source_firmware=$(FIRMWARE_VERSION) \
-		--tag $(TARGET_IMAGE):$$($(PODMAN) image inspect --format '{{ .Config.Labels.version }}' $(SOURCE_IMAGE)) \
-		.
-
-ifdef DOCKER_PUSH
-	$(PODMAN) image push $(TARGET_IMAGE):$$($(PODMAN) image inspect --format '{{ .Config.Labels.version }}' $(SOURCE_IMAGE))
-endif
+build: cache/uxgpro-$(FIRMWARE_VERSION)/image.txt
 else
 build:
-	$(MAKE) FIRMWARE_VERSION=$$($(CURL) --header 'X-Requested-With: XMLHttpRequest' https://www.ui.com/download/?product=uxg-pro | $(JQ) '.downloads | map(select(.category__slug == "firmware")) | max_by(.version) | .version')
+	$(eval FIRMWARE_VERSION = $(shell $(CURL) --header 'X-Requested-With: XMLHttpRequest' https://www.ui.com/download/?product=uxg-pro | $(JQ) '.downloads | map(select(.category__slug == "firmware")) | max_by(.version) | .version'))
+	$(MAKE) FIRMWARE_VERSION=$(FIRMWARE_VERSION)
 endif
 
 cache/uxgpro-%/firmware.bin: cache/uxgpro-%/firmware.json
@@ -46,3 +37,16 @@ cache/uxgpro-%/fs: cache/uxgpro-%/firmware.bin
 
 cache/uxgpro-%/image.tar: cache/uxgpro-%/fs
 	$(PODMAN) --root $</rootfs/var/lib/containers/storage image save --output $@ $(SOURCE_IMAGE)
+
+cache/uxgpro-%/image.txt: cache/uxgpro-%/image.tar
+	$(PODMAN) image load --input $<
+	$(PODMAN) image build \
+		--build-arg BUILD_FROM=$(SOURCE_IMAGE) \
+		--label source_firmware=$(FIRMWARE_VERSION) \
+		--iidfile $@ \
+		--tag $(TARGET_IMAGE):$$($(PODMAN) image inspect --format '{{ .Config.Labels.version }}' $(SOURCE_IMAGE)) \
+		.
+
+ifdef DOCKER_PUSH
+	$(PODMAN) image push $(TARGET_IMAGE):$$($(PODMAN) image inspect --format '{{ .Config.Labels.version }}' $(SOURCE_IMAGE))
+endif
