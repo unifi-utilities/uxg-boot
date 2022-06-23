@@ -19,15 +19,14 @@ build: cache/uxgpro-$(FIRMWARE_VERSION)/image.tar cache/uxgpro-$(FIRMWARE_VERSIO
 	$(eval include cache/uxgpro-$(FIRMWARE_VERSION)/image.mk)
 	$(PODMAN) image load --input cache/uxgpro-$(FIRMWARE_VERSION)/image.tar
 	$(PODMAN) image build --build-arg BUILD_FROM=$(SOURCE_DIGEST) --tag $(TARGET_IMAGE):$(SOURCE_VERSION) .
+
+ifdef DOCKER_PUSH
+	$(PODMAN) image push $(TARGET_IMAGE):$(SOURCE_VERSION)
+endif
 else
 build:
 	$(MAKE) FIRMWARE_VERSION=$$($(CURL) --header 'X-Requested-With: XMLHttpRequest' https://www.ui.com/download/?product=uxg-pro | $(JQ) '.downloads | map(select(.category__slug == "firmware")) | max_by(.version) | .version')
 endif
-
-# TODO: Don't push older images.
-push:
-	$(eval include cache/uxgpro-$(FIRMWARE_VERSION)/image.mk)
-	$(PODMAN) image push $(TARGET_IMAGE):$(SOURCE_VERSION)
 
 cache/uxgpro-%/firmware.bin: cache/uxgpro-%/firmware.json
 	$(MKDIR) $(@D)
