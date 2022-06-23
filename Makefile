@@ -52,7 +52,7 @@ cache/uxgpro-%/output.tar: cache/uxgpro-%/output.txt
 cache/uxgpro-%/output.txt: cache/uxgpro-%/input.tar
 	$(PODMAN) image load --input $<
 	$(PODMAN) image build \
-		--build-arg BUILD_FROM=$$($(SKOPEO) inspect --raw docker-archive:$< | $(JQ) .config.digest) \
-		--label source_firmware=$* \
+		--from $$($(SKOPEO) inspect --raw docker-archive:$< | $(JQ) .config.digest) \
 		--iidfile $@ \
+		--label source_firmware=$* \
 		.
