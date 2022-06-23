@@ -20,8 +20,8 @@ MAKEFLAGS += --warn-undefined-variables
 ifdef FIRMWARE_VERSION
 build: cache/uxgpro-$(FIRMWARE_VERSION)/output.tar
 ifdef DOCKER_PUSH
-	$(SKOPEO) copy docker-archive:$< $(TARGET_IMAGE):$$($(SKOPEO) inspect --config --raw docker-archive:$< | $(JQ) .config.Labels.version)
-	$(SKOPEO) copy docker-archive:$< $(TARGET_IMAGE):latest
+	$(SKOPEO) copy docker-archive:$< docker://$(TARGET_IMAGE):$$($(SKOPEO) inspect --config --raw docker-archive:$< | $(JQ) .config.Labels.version)
+	$(SKOPEO) copy docker-archive:$< docker://$(TARGET_IMAGE):latest
 endif
 else
 build:
