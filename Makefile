@@ -19,11 +19,13 @@ UXGPRO_FIRMWARE_URL    = https://fw-download.ubnt.com/data/unifi-firmware/$(FIRM
 build: cache/uxgpro-$(FIRMWARE_VERSION)/image.tar cache/uxgpro-$(FIRMWARE_VERSION)/image.mk
 	$(eval include cache/uxgpro-$(FIRMWARE_VERSION)/image.mk)
 	$(PODMAN) image load --input cache/uxgpro-$(FIRMWARE_VERSION)/image.tar
-	$(PODMAN) image build --build-arg BUILD_FROM=$(SOURCE_DIGEST) --tag $(TARGET_IMAGE):$(SOURCE_VERSION) .
+	$(PODMAN) image tag $(SOURCE_DIGEST) $(TARGET_IMAGE):$(SOURCE_VERSION)-original
+	$(PODMAN) image build --build-arg SOURCE_VERSION=$(SOURCE_VERSION) --tag $(TARGET_IMAGE):$(SOURCE_VERSION) .
 
 # TODO: Don't push older images.
 push:
 	$(eval include cache/uxgpro-$(FIRMWARE_VERSION)/image.mk)
+	$(PODMAN) image push $(TARGET_IMAGE):$(SOURCE_VERSION)-original
 	$(PODMAN) image push $(TARGET_IMAGE):$(SOURCE_VERSION)
 
 cache/uxgpro-%/firmware.bin:

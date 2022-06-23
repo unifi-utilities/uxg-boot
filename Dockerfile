@@ -1,4 +1,3 @@
-ARG BUILD_FROM
-# hadolint ignore=DL3006
-FROM $BUILD_FROM
+ARG SOURCE_VERSION
+FROM joshuaspence/uxg-setup:${SOURCE_VERSION}-original
 COPY docker-entrypoint.sh /usr/local/bin
