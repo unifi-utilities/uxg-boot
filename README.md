@@ -1,10 +1,10 @@
 # uxg-boot
 
 Enables custom boot scripts for the [UniFi UXG-Pro][uxg]. Inspired by
-[`on-boot-script`][on-boot-script] from [`udm-utilies`][udm-utilities] and
+[`on-boot-script`][on-boot-script] from [`udm-utilities`][udm-utilities] and
 based on ideas from boostchicken-dev/udm-utilities#356.
 
-Intended to be fully compatible with [`udm-utilies`][udm-utilities], such that
+Intended to be fully compatible with [`udm-utilities`][udm-utilities], such that
 all of the scripts from the original repository should work verbatim.
 
 ## Installation
