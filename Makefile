@@ -12,7 +12,7 @@ FIRMWARE_1.12.19_SLUG := 2ee2
 FIRMWARE_1.12.19_HASH := 45c1b1b0b5f84bc191310823d7d99baf
 UXGPRO_FIRMWARE_URL    = https://fw-download.ubnt.com/data/unifi-firmware/$(FIRMWARE_$1_SLUG)-UXGPRO-$1-$(FIRMWARE_$1_HASH).bin
 
-.PHONY: build
+.PHONY: build push
 .SECONDARY:
 
 # TODO: Allow setting `FIRMWARE_VERSION=latest`.
