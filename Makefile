@@ -1,4 +1,5 @@
 AWK    := awk
+CAT    := cat
 CHOWN  := sudo chown --recursive $(USER):$(USER)
 CURL   := curl --fail --location --no-progress-meter
 FIND   := find
@@ -18,6 +19,11 @@ MAKEFLAGS += --warn-undefined-variables
 
 ifdef FIRMWARE_VERSION
 build: cache/uxgpro-$(FIRMWARE_VERSION)/image.txt
+ifdef DOCKER_PUSH
+	$(eval IMAGE_ID = $(shell $(CAT) $<))
+	$(eval SOURCE_VERSION = $(shell $(PODMAN) image inspect --format '{{ .Config.Labels.version }}' $(IMAGE_ID)))
+	$(PODMAN) image push $(IMAGE_ID) $(TARGET_IMAGE):$(SOURCE_VERSION)
+endif
 else
 build:
 	$(eval FIRMWARE_VERSION = $(shell $(CURL) --header 'X-Requested-With: XMLHttpRequest' https://www.ui.com/download/?product=uxg-pro | $(JQ) '.downloads | map(select(.category__slug == "firmware")) | max_by(.version) | .version'))
@@ -46,9 +52,4 @@ cache/uxgpro-%/image.txt: cache/uxgpro-%/image.tar
 		--build-arg BUILD_FROM=$(SOURCE_IMAGE) \
 		--label source_firmware=$(FIRMWARE_VERSION) \
 		--iidfile $@ \
-		--tag $(TARGET_IMAGE):$$($(PODMAN) image inspect --format '{{ .Config.Labels.version }}' $(SOURCE_IMAGE)) \
 		.
-
-ifdef DOCKER_PUSH
-	$(PODMAN) image push $(TARGET_IMAGE):$$($(PODMAN) image inspect --format '{{ .Config.Labels.version }}' $(SOURCE_IMAGE))
-endif
