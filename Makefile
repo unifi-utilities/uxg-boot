@@ -23,6 +23,7 @@ ifdef DOCKER_PUSH
 	$(eval IMAGE_ID = $(shell $(CAT) $<))
 	$(eval SOURCE_VERSION = $(shell $(PODMAN) image inspect --format '{{ .Config.Labels.version }}' $(IMAGE_ID)))
 	$(PODMAN) image push $(IMAGE_ID) $(TARGET_IMAGE):$(SOURCE_VERSION)
+	$(PODMAN) image push $(IMAGE_ID) $(TARGET_IMAGE):latest
 endif
 else
 build:
