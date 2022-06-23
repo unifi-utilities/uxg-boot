@@ -3,7 +3,7 @@ CURL   := curl --fail --location --no-progress-meter
 PODMAN := podman
 MKDIR  := @mkdir --parents
 
-SOURCE_IMAGE := localhost/uxg-setup
+SOURCE_IMAGE := uxg-setup
 TARGET_IMAGE := docker.io/joshuaspence/uxg-setup
 
 FIRMWARE_1.11.0_SLUG  := 5d22
