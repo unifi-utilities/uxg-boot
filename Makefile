@@ -15,10 +15,10 @@ MAKEFLAGS += --warn-undefined-variables
 .SECONDARY:
 
 ifdef FIRMWARE_VERSION
-build: cache/uxgpro-$(FIRMWARE_VERSION)/image.tar cache/uxgpro-$(FIRMWARE_VERSION)/image.mk
-	$(eval include cache/uxgpro-$(FIRMWARE_VERSION)/image.mk)
+build: cache/uxgpro-$(FIRMWARE_VERSION)/image.tar
 	$(PODMAN) image load --input cache/uxgpro-$(FIRMWARE_VERSION)/image.tar
-	$(PODMAN) image build --build-arg BUILD_FROM=$(SOURCE_DIGEST) --tag $(TARGET_IMAGE):$(SOURCE_VERSION) .
+	$(eval SOURCE_VERSION := $(shell $(PODMAN) image inspect --format '{{ .Config.Labels.version }}' $(SOURCE_IMAGE)))
+	$(PODMAN) image build --build-arg BUILD_FROM=$(SOURCE_IMAGE) --tag $(TARGET_IMAGE):$(SOURCE_VERSION) .
 
 ifdef DOCKER_PUSH
 	$(PODMAN) image push $(TARGET_IMAGE):$(SOURCE_VERSION)
@@ -39,9 +39,6 @@ cache/uxgpro-%/firmware.json:
 cache/uxgpro-%/fs: cache/uxgpro-%/firmware.bin
 	firmware-mod-kit/extract-firmware.sh $< $@
 	$(CHOWN) $@/rootfs
-
-cache/uxgpro-%/image.mk: cache/uxgpro-%/fs
-	$(PODMAN) --root $</rootfs/var/lib/containers/storage image inspect --format 'SOURCE_DIGEST := {{ .ID }}{{ "\n" }}SOURCE_VERSION := {{ .Config.Labels.version }}' $(SOURCE_IMAGE) > $@
 
 cache/uxgpro-%/image.tar: cache/uxgpro-%/fs
 	$(PODMAN) --root $</rootfs/var/lib/containers/storage image save --output $@ $(SOURCE_IMAGE)
