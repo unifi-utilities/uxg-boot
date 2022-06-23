@@ -17,7 +17,7 @@ jobs:
       - uses: 'actions/cache@v3'
         with:
           path: 'cache/uxgpro-*'
-          key: 'uxgpro'
+          key: 'uxgpro-1'
       - uses: 'actions/cache@v3'
         with:
           path: 'firmware-mod-kit'
