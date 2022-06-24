@@ -14,11 +14,15 @@ jobs:
     defaults:
       run:
         working-directory: 'firmware-mod-kit/src'
+    outputs:
+      cache_key: '${{ runner.os }}/firmware-mod-kit/src'
+      cache_path: 'firmware-mod-kit/src'
     steps:
       - uses: 'actions/checkout@v3'
         with:
           submodules: true
-      - uses: 'actions/cache@v3'
+      - id: 'cache'
+        uses: 'actions/cache@v3'
         with:
           path: 'firmware-mod-kit/src'
           key: '${{ runner.os }}/firmware-mod-kit/src'
@@ -41,8 +45,8 @@ jobs:
           key: 'uxgpro-3'
       - uses: 'actions/cache@v3'
         with:
-          path: 'firmware-mod-kit/src'
-          key: '${{ runner.os }}/firmware-mod-kit/src'
+          path: '${{ needs.firmware-mod-kit.outputs.cache_path }}'
+          key: '${{ needs.firmware-mod-kit.outputs.cache_key }}'
 
       - uses: 'docker/login-action@v2'
         with:
