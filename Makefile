@@ -31,11 +31,11 @@ endif
 
 cache/uxgpro-%/firmware.bin: cache/uxgpro-%/firmware.json
 	$(MKDIR) $(@D)
-	$(CURL) --output $@ $$($(JQ) .file_path $<)
+	$(CURL) --output $@ $(if $(value FIRMWARE_URL),$(value FIRMWARE_URL),$$($(JQ) .file_path $<))
 
 cache/uxgpro-%/firmware.json:
 	$(MKDIR) $(@D)
-	$(CURL) --header 'X-Requested-With: XMLHttpRequest' https://www.ui.com/download/?product=uxg-pro | $(JQ) --arg version $* '.downloads[] | select(.category__slug == "firmware" and .version == $$version)' > $@
+	$(CURL) --header 'X-Requested-With: XMLHttpRequest' https://www.ui.com/download/?product=uxg-pro | $(JQ) --arg version $* '.downloads | map(select(.category__slug == "firmware" and .version == $$version)) | max_by(.id) // {}' > $@
 
 cache/uxgpro-%/fs: cache/uxgpro-%/firmware.bin
 	firmware-mod-kit/extract-firmware.sh $< $@
