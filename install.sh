@@ -9,6 +9,7 @@ set -o pipefail
 
 LOCAL_IMAGE='uxg-setup:default'
 REMOTE_IMAGE='joshuaspence/uxg-setup'
+ORIGINAL_IMAGE='uxg-setup:latest'
 
 depends_on() {
   command -v "${1}" &>/dev/null || {
@@ -28,6 +29,41 @@ header() {
 EOF
 }
 
+install() {
+  if is_installed; then
+    echo 'UXG-Boot is already installed.' >&2
+    return 1
+  fi
+
+  IMAGE_ID=$(podman image inspect --format '{{ .ID }}' "${LOCAL_IMAGE}")
+  IMAGE_VERSION=$(podman image inspect --format '{{ .Labels.version }}' "${LOCAL_IMAGE}")
+
+  if [[ "${IMAGE_VERSION}" == '<no value>' ]]; then
+    echo "Unable to determine version of '${LOCAL_IMAGE}'" >&2
+    return 1
+  fi
+
+  echo "Updating ${LOCAL_IMAGE} (${IMAGE_ID}) to ${REMOTE_IMAGE}:${IMAGE_VERSION}"
+  uxg-setup update "${REMOTE_IMAGE}:${IMAGE_VERSION}"
+}
+
+is_installed() {
+  podman image inspect --format '{{ range $k, $v := .RepoTags }}{{ $v }}{{ "\n" }}{{ end }}' "${LOCAL_IMAGE}" 2>/dev/null | grep -q "${REMOTE_IMAGE}"
+}
+
+uninstall() {
+  if ! is_installed; then
+    echo 'UXG-Boot is not installed.' >&2
+    return 1
+  fi
+
+  IMAGE_ID=$(podman image inspect --format '{{ .ID }}' "${ORIGINAL_IMAGE}")
+
+  echo "Restoring ${LOCAL_IMAGE} to ${ORIGINAL_IMAGE} (${IMAGE_ID})"
+  podman image tag "${IMAGE_ID}" "${LOCAL_IMAGE}"
+  uxg-setup reset
+}
+
 header
 depends_on ubnt-device-info
 depends_on podman
@@ -42,18 +78,17 @@ if ! podman image exists "${LOCAL_IMAGE}"; then
   exit 1
 fi
 
-if podman image inspect --format '{{ range $k, $v := .RepoTags }}{{ $v }}{{ "\n" }}{{ end }}' "${LOCAL_IMAGE}" 2>/dev/null | grep -q "${REMOTE_IMAGE}"; then
-  echo 'UXG-Boot is already installed.' >&2
-  exit 1
-fi
+case "${1:-install}" in
+  install)
+    install
+    ;;
 
-IMAGE_ID=$(podman image inspect --format '{{ .ID }}' "${LOCAL_IMAGE}")
-IMAGE_VERSION=$(podman image inspect --format '{{ .Labels.version }}' "${LOCAL_IMAGE}")
+  uninstall)
+    uninstall
+    ;;
 
-if [[ "${IMAGE_VERSION}" == '<no value>' ]]; then
-  echo "Unable to determine version of '${LOCAL_IMAGE}'" >&2
-  exit 1
-fi
-
-echo "Updating ${LOCAL_IMAGE} (${IMAGE_ID}) to ${REMOTE_IMAGE}:${IMAGE_VERSION}"
-uxg-setup update "${REMOTE_IMAGE}:${IMAGE_VERSION}"
+  *)
+    echo "Invalid command: ${1}" >&2
+    exit 1
+    ;;
+esac

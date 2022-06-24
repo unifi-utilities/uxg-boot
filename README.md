@@ -29,6 +29,14 @@ uxg-setup update joshuaspence/uxg-setup:$(VERSION)
 
 ## Uninstallation
 
+### Automatic
+
+```sh
+curl -fLSs https://raw.githubusercontent.com/joshuaspence/uxg-boot/master/install.sh | sh -s uninstall
+```
+
+### Manual
+
 ```sh
 podman image tag uxg-setup:latest uxg-setup:default
 uxg-setup reset
