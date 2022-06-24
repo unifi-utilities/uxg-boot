@@ -7,7 +7,26 @@ on:
       - 'master'
   workflow_dispatch: {}
 jobs:
+  firmware-mod-kit:
+    runs-on: 'ubuntu-latest'
+    defaults:
+      run:
+        working-directory: 'firmware-mod-kit/src'
+    steps:
+      - uses: 'actions/checkout@v3'
+        with:
+          submodules: true
+      - uses: 'actions/cache@v3'
+        with:
+          path: 'firmware-mod-kit/src'
+          key: '${{ runner.os }}/firmware-mod-kit/src'
+
+      - run: 'autoconf --warnings=all'
+      - run: './configure --quiet'
+      - run: 'make --silent'
+
   image:
+    needs: 'firmware-mod-kit'
     runs-on: 'ubuntu-latest'
     steps:
       - uses: 'actions/checkout@v3'
@@ -20,8 +39,8 @@ jobs:
           key: 'uxgpro-3'
       - uses: 'actions/cache@v3'
         with:
-          path: 'firmware-mod-kit'
-          key: '${{ runner.os }}-firmware-mod-kit'
+          path: 'firmware-mod-kit/src'
+          key: '${{ runner.os }}/firmware-mod-kit/src'
 
       - uses: 'docker/login-action@v2'
         with:
