@@ -1,11 +1,14 @@
 # uxg-boot
 
-Enables custom boot scripts for the [UniFi UXG-Pro][uxg]. Inspired by
+Enables custom boot scripts for the [UniFi UXG-Pro][uxg-pro]. Inspired by
 [`on-boot-script`][on-boot-script] from [`udm-utilities`][udm-utilities] and
-based on ideas from boostchicken-dev/udm-utilities#356.
+based on ideas from boostchicken-dev/udm-utilities#356. Intended to be fully
+compatible with [`udm-utilities`][udm-utilities], such that all of the scripts
+from the original repository should work verbatim.
 
-Intended to be fully compatible with [`udm-utilities`][udm-utilities], such that
-all of the scripts from the original repository should work verbatim.
+Tested on the following firmware versions:
+
+  - 1.12.19
 
 ## Installation
 
@@ -47,4 +50,4 @@ podman start multicast-relay
 
 [on-boot-script]: https://github.com/boostchicken-dev/udm-utilities/blob/master/on-boot-script/README.md
 [udm-utilities]: https://github.com/boostchicken-dev/udm-utilities
-[uxg]: https://store.ui.com/products/unifi-next-generation-gateway-professional
+[uxg-pro]: https://store.ui.com/products/unifi-next-generation-gateway-professional
