@@ -1,3 +1,7 @@
 ---
-MD013:
+line-length:
   code_blocks: false
+no-duplicate-header:
+  allow_different_nesting: true
+ul-indent:
+  start_indented: 2
