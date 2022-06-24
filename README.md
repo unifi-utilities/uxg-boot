@@ -17,7 +17,7 @@ Tested on the following firmware versions:
 You can install `uxg-boot` by running the following command on your UXG-Pro.
 
 ```sh
-curl -fLSs https://raw.githubusercontent.com/joshuaspence/uxg-boot/master/install.sh | sh
+curl -fLSs https://raw.githubusercontent.com/unifi-utilities/uxg-boot/master/install.sh | sh
 ```
 
 ### Manual
@@ -32,7 +32,7 @@ uxg-setup update joshuaspence/uxg-setup:$(VERSION)
 ### Automatic
 
 ```sh
-curl -fLSs https://raw.githubusercontent.com/joshuaspence/uxg-boot/master/install.sh | sh -s uninstall
+curl -fLSs https://raw.githubusercontent.com/unifi-utilities/uxg-boot/master/install.sh | sh -s uninstall
 ```
 
 ### Manual
