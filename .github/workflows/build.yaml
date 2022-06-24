@@ -30,3 +30,23 @@ jobs:
       - if: "github.event_name != 'pull_request'"
         run: 'echo DOCKER_PUSH=true >> $GITHUB_ENV'
       - run: 'make build'
+
+  fmk:
+    runs-on: 'ubuntu-latest'
+    defaults:
+      run:
+        working-directory: 'firmware-mod-kit/src'
+    steps:
+      - uses: 'actions/checkout@v3'
+        with:
+          submodules: true
+
+      - uses: 'actions/cache@v3'
+        with:
+          path: 'firmware-mod-kit'
+          key: '${{ runner.os }}-firmware-mod-kit-test'
+
+      - run: 'autoconf --warnings=all'
+      - run: './configure --quiet'
+      - run: 'make --silent'
+      - run: 'find . -executable | wc -l'
