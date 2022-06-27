@@ -57,10 +57,18 @@ uninstall() {
     return 1
   fi
 
-  IMAGE_ID=$(podman image inspect --format '{{ .ID }}' "${ORIGINAL_IMAGE}")
+  echo "Stopping uxg-setup"
+  uxg-setup stop
 
-  echo "Restoring ${LOCAL_IMAGE} to ${ORIGINAL_IMAGE} (${IMAGE_ID})"
-  podman image tag "${IMAGE_ID}" "${LOCAL_IMAGE}"
+  for IMAGE in $(podman image list --quiet "${REMOTE_IMAGE}"); do
+    # NOTE: I am not sure why the image ID end with `false`.
+    IMAGE="${IMAGE%false}"
+
+    echo "Removing ${REMOTE_IMAGE} (${IMAGE})"
+    podman image rm --force "${IMAGE}"
+  done
+
+  echo "Resetting uxg-setup"
   uxg-setup reset
 }
 
