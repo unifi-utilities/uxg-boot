@@ -9,7 +9,6 @@ set -o pipefail
 
 LOCAL_IMAGE='uxg-setup:default'
 REMOTE_IMAGE='joshuaspence/uxg-setup'
-ORIGINAL_IMAGE='uxg-setup:latest'
 
 depends_on() {
   command -v "${1}" &>/dev/null || {
