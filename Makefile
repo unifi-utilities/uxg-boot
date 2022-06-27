@@ -54,4 +54,5 @@ cache/uxgpro-%/output.txt: cache/uxgpro-%/input.tar
 		--from $$($(SKOPEO) inspect --raw docker-archive:$< | $(JQ) .config.digest) \
 		--iidfile $@ \
 		--label source_firmware=$* \
+		--squash-all \
 		.
