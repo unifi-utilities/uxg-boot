@@ -42,7 +42,7 @@ jobs:
       - uses: 'actions/cache@v3'
         with:
           path: 'cache/uxgpro-*'
-          key: 'uxgpro-3'
+          key: "uxgpro-${{ hashFiles('Makefile') }}"
       - uses: 'actions/cache@v3'
         with:
           path: '${{ needs.firmware-mod-kit.outputs.cache_path }}'
