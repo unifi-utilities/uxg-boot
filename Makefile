@@ -11,7 +11,12 @@ SOURCE_IMAGE := uxg-setup
 TARGET_IMAGE := docker.io/joshuaspence/uxg-setup
 
 MAKEFLAGS += --no-print-directory
-MAKEFLAGS += --warn-undefined-variables
+
+define ubnt_fwupdate_api
+https://fw-update.ubnt.com/api/$(1)?$\
+$(subst $  ,&,$(foreach filter,product=unifi-firmware platform=UXGPRO channel=release $(2),filter=eq~~$(subst =,~~,$(filter))))&$\
+$(subst $  ,&,$(foreach key,$(3),sort=$(key)))
+endef
 
 .DELETE_ON_ERROR:
 .PHONY: build
@@ -25,17 +30,17 @@ ifdef DOCKER_PUSH
 endif
 else
 build:
-	$(eval FIRMWARE_VERSION = $(shell $(CURL) --header 'X-Requested-With: XMLHttpRequest' https://www.ui.com/download/?product=uxg-pro | $(JQ) '.downloads | map(select(.category__slug == "firmware")) | max_by(.version) | .version'))
+	$(eval FIRMWARE_VERSION = $(shell $(CURL) '$(call ubnt_fwupdate_api,firmware-latest)' | $(JQ) '._embedded.firmware[0].version | ltrimstr("v") | split("+")[0]'))
 	$(MAKE) FIRMWARE_VERSION=$(FIRMWARE_VERSION)
 endif
 
 cache/uxgpro-%/firmware.bin: cache/uxgpro-%/firmware.json
 	$(MKDIR) $(@D)
-	$(CURL) --output $@ $(if $(value FIRMWARE_URL),$(value FIRMWARE_URL),$$($(JQ) .file_path $<))
+	$(CURL) --output $@ $$($(JQ) '._embedded.firmware[0]._links.data.href' $<)
 
 cache/uxgpro-%/firmware.json:
 	$(MKDIR) $(@D)
-	$(CURL) --header 'X-Requested-With: XMLHttpRequest' https://www.ui.com/download/?product=uxg-pro | $(JQ) --arg version $* '.downloads | map(select(.category__slug == "firmware" and .version == $$version)) | max_by(.id) // {}' > $@
+	$(CURL) --output $@ '$(call ubnt_fwupdate_api,firmware,version_major=$(word 1,$(subst ., ,$*)) version_minor=$(word 2,$(subst ., ,$*)) version_patch=$(word 3,$(subst ., ,$*)),-version)'
 
 cache/uxgpro-%/fs: cache/uxgpro-%/firmware.bin
 	firmware-mod-kit/extract-firmware.sh $< $@
