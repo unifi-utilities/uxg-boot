@@ -1,7 +1,6 @@
 CAT    := cat
 CHOWN  := sudo chown --recursive $(USER):$(USER)
 CURL   := curl --fail --location --no-progress-meter
-FIND   := find
 JQ     := jq --raw-output --exit-status
 PODMAN := podman
 MKDIR  := @mkdir --parents
@@ -45,7 +44,6 @@ cache/uxgpro-%/firmware.json:
 cache/uxgpro-%/fs: cache/uxgpro-%/firmware.bin
 	firmware-mod-kit/extract-firmware.sh $< $@
 	$(CHOWN) $@/rootfs
-	$(FIND) $@/rootfs -type c -delete
 
 cache/uxgpro-%/input.tar: cache/uxgpro-%/fs
 	$(PODMAN) --root $</rootfs/var/lib/containers/storage image save --output $@ $(SOURCE_IMAGE)
