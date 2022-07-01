@@ -51,6 +51,7 @@ cache/uxgpro-%/input.tar: cache/uxgpro-%/fs
 cache/uxgpro-%/output.tar: cache/uxgpro-%/output.txt
 	$(PODMAN) save --output $@ $$($(CAT) $<)
 
+# TODO: Add more labels to container.
 cache/uxgpro-%/output.txt: cache/uxgpro-%/input.tar
 	$(PODMAN) image load --input $<
 	$(PODMAN) image build \
