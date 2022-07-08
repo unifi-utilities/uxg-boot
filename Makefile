@@ -35,7 +35,7 @@ endif
 
 cache/uxgpro-%/firmware.bin: cache/uxgpro-%/firmware.json
 	$(MKDIR) $(@D)
-	$(CURL) --output $@ $$($(JQ) '._embedded.firmware[0]._links.data.href' $<)
+	$(CURL) --output $@ $(if $(value FIRMWARE_URL),$(value FIRMWARE_URL),$$($(JQ) '._embedded.firmware[0]._links.data.href' $<))
 
 cache/uxgpro-%/firmware.json:
 	$(MKDIR) $(@D)
@@ -46,7 +46,7 @@ cache/uxgpro-%/fs: cache/uxgpro-%/firmware.bin
 	$(CHOWN) $@/rootfs
 
 cache/uxgpro-%/input.tar: cache/uxgpro-%/fs
-	$(PODMAN) --root $</rootfs/var/lib/containers/storage image save --output $@ $(SOURCE_IMAGE)
+	$(PODMAN) --storage-driver overlay --root $</rootfs/var/lib/containers/storage image save --output $@ $(SOURCE_IMAGE)
 
 cache/uxgpro-%/output.tar: cache/uxgpro-%/output.txt
 	$(PODMAN) save --output $@ $$($(CAT) $<)
