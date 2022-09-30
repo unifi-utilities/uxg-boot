@@ -10,6 +10,7 @@ Tested on the following firmware versions:
 
   - 1.11.0
   - 1.12.19
+  - 1.13.6
 
 ## Installation
 
