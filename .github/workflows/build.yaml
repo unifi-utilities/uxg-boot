@@ -27,7 +27,7 @@ jobs:
           path: 'firmware-mod-kit/src'
           key: '${{ runner.os }}/firmware-mod-kit/src'
 
-      - run: 'autoconf --warnings=all'
+      - run: 'autoreconf --force --install'
       - run: './configure --quiet'
       - run: 'make --silent'
 
