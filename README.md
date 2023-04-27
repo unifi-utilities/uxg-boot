@@ -1,5 +1,7 @@
 # uxg-boot
 
+## This approach doesn't work anymore, see #18. See also https://github.com/unifi-utilities/unifios-utilities/issues/523
+
 Enables custom boot scripts for the [UniFi UXG-Pro][uxg-pro]. Inspired by
 [`on-boot-script`][on-boot-script] from [`udm-utilities`][udm-utilities] and
 based on ideas from boostchicken-dev/udm-utilities#356. Intended to be fully
