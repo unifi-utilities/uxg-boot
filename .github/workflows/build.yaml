@@ -18,7 +18,7 @@ jobs:
       cache_key: '${{ runner.os }}/firmware-mod-kit/src'
       cache_path: 'firmware-mod-kit/src'
     steps:
-      - uses: 'actions/checkout@v3'
+      - uses: 'actions/checkout@v4'
         with:
           submodules: true
       - id: 'cache'
@@ -35,7 +35,7 @@ jobs:
     needs: 'firmware-mod-kit'
     runs-on: 'ubuntu-latest'
     steps:
-      - uses: 'actions/checkout@v3'
+      - uses: 'actions/checkout@v4'
         with:
           submodules: true
 
