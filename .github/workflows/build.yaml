@@ -48,7 +48,7 @@ jobs:
           path: '${{ needs.firmware-mod-kit.outputs.cache_path }}'
           key: '${{ needs.firmware-mod-kit.outputs.cache_key }}'
 
-      - uses: 'docker/login-action@v2'
+      - uses: 'docker/login-action@v3'
         with:
           username: '${{ secrets.DOCKER_USERNAME }}'
           password: '${{ secrets.DOCKER_PASSWORD }}'
