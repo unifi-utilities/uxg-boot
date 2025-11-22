@@ -22,7 +22,7 @@ jobs:
         with:
           submodules: true
       - id: 'cache'
-        uses: 'actions/cache@v3'
+        uses: 'actions/cache@v4'
         with:
           path: 'firmware-mod-kit/src'
           key: '${{ runner.os }}/firmware-mod-kit/src'
@@ -39,11 +39,11 @@ jobs:
         with:
           submodules: true
 
-      - uses: 'actions/cache@v3'
+      - uses: 'actions/cache@v4'
         with:
           path: 'cache/uxgpro-*'
           key: "uxgpro-${{ hashFiles('Makefile') }}"
-      - uses: 'actions/cache@v3'
+      - uses: 'actions/cache@v4'
         with:
           path: '${{ needs.firmware-mod-kit.outputs.cache_path }}'
           key: '${{ needs.firmware-mod-kit.outputs.cache_key }}'
