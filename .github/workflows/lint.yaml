@@ -1,10 +1,8 @@
 ---
 name: 'Lint'
 on:
-  pull_request: {}
-  push:
-    branches:
-      - 'master'
+  workflow_dispatch:
+
 jobs:
   hadolint:
     runs-on: 'ubuntu-latest'
